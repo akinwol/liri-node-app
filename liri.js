@@ -19,13 +19,18 @@ switch (action) {
     lastTweets();
     break;
 
-    case 'spotify-this-song':
-    getSpotify();
+  case 'spotify-this-song':
+    getSpotify(process.argv[3]);
     break;
+  
+  case 'do-what-it-says':
+   whatItSays();
+   break;
 
   default:
     break;
-}
+};
+
 
 
 function lastTweets() {
@@ -46,32 +51,53 @@ function lastTweets() {
   });
 };
 
-function getSpotify(){
-  if (!process.argv[3]){
-    input = 'The sign ace of base'
+function getSpotify(param) {
+  if(!param){
+    param = 'The sign ace of base'
   }
+  // if (process.argv[3]) {
+  //   input = process.argv[3]
+  // }
+  // else{
+  //   input = 'The sign ace of base'
+  // }
   // spotify parameters required for the search 
   var spotParam = {
-    type:'track',
-    query: input,
+    type: 'track',
+    query: param,
     limit: 2
   };
   // Spotify search method 
-  spotify.search(spotParam, function(err,data){
+  spotify.search(spotParam, function (err, data) {
     var spotArray = data.tracks.items
     if (err) throw err;
-    // console.log(spotArray[0].artists)
-    // console.log(divider)
+   
+   
     console.log("Artist name(s): ");
     // this is looking at the artists array and logging the name 
-    spotArray[0].artists.forEach(function(item){
+    spotArray[0].artists.forEach(function (item) {
       // log each artist name 
       console.log(item.name);
     });
-    console.log("\nSong name: "+ spotArray[0].name
-    +"\nPreview URL: " + spotArray[0].preview_url
-  +"\nAlbum name: "+ spotArray[0].album.name)
-      console.log(divider)
+    console.log("\nSong name: " + spotArray[0].name
+      + "\nPreview URL: " + spotArray[0].preview_url
+      + "\nAlbum name: " + spotArray[0].album.name)
+    console.log(divider)
+  });
+};
+
+function whatItSays() {
+  // Read file
+  fs.readFile("random.txt", "utf8", function (error, data) {
+    if (error) {
+      throw error
+    }
+    else {
+      var dataArray = data.split(",")
+      // console.log(dataArray[1])
+    };
+    // input = dataArray[1];
+    getSpotify(dataArray[1]);
   });
 };
 
@@ -101,26 +127,15 @@ function getSpotify(){
 // * Actors in the movie.
 
 
-// Read file
-fs.readFile("random.txt","utf8", function(error, data){
-    if(error){
-      throw error
-    }
-    else {
-      var dataArray = data.split(",")
-      // console.log(dataArray[1])
-    };
-    process.argv[3] = dataArray[1];
-    console.log(process.argv[3])
-    getSpotify();
-});
+
 
 // Write file 
-fs.appendFile("log.txt", value + divider, function (err) {
-  if (err) {
-    throw err
-  }
-  else {
-    console.log(value)
-  }
-});
+// fs.appendFile("log.txt", value + divider, function (err) {
+//   if (err) {
+//     throw err
+//   }
+//   else {
+//     console.log(value)
+//   }
+// });
+
