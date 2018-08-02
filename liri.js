@@ -7,9 +7,11 @@ var keys = require("./keys.js");
 
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
-var divider = "\n--------------------\n"
+var divider = "\n__________________________\n"
+var dividerTwo = "\n--------------------\n"
 var action = process.argv[2]
 var input = process.argv[3]
+
 
 // This allows you to swtich case base on the command line arguments 
 switch (action) {
@@ -22,10 +24,14 @@ switch (action) {
   case 'spotify-this-song':
     getSpotify(process.argv[3]);
     break;
-  
+
   case 'do-what-it-says':
-   whatItSays();
-   break;
+    whatItSays();
+    break;
+
+    case 'movie-this':
+    movieThis();
+    break;
 
   default:
     break;
@@ -42,17 +48,28 @@ function lastTweets() {
 
   client.get('statuses/user_timeline', params, function (error, tweets, response) {
     if (error) throw error;
-    for (let i = 0; i < tweets.length; i++) {
-      console.log("tweet: " + tweets[i].text
-        + "\nCreated Date: " + tweets[i].created_at
-        + divider);
-    };
+    var tweetArray = []
+    tweets.forEach(function(item,index){
+      tweetArray[index] = "Tweet-"+(index+1)+ ": " +"\n"+
+       "Date and time Created: " + item.created_at + 
+       "\nTweet: " + item.text + dividerTwo;
+
+    });
+    var displayValue = tweetArray.join("\n")
+    // console.log(displayValue)
+    writeToFile(displayValue)
+
+    // for (let i = 0; i < tweets.length; i++) {
+    //   console.log("tweet: " + tweets[i].text
+    //     + "\nCreated Date: " + tweets[i].created_at
+    //     + divider);
+    // };
 
   });
 };
 
 function getSpotify(param) {
-  if(!param){
+  if (!param) {
     param = 'The sign ace of base'
   }
   // if (process.argv[3]) {
@@ -71,18 +88,32 @@ function getSpotify(param) {
   spotify.search(spotParam, function (err, data) {
     var spotArray = data.tracks.items
     if (err) throw err;
-   
-   
-    console.log("Artist name(s): ");
+    var artistArray = []
+
+    // console.log("Artist name(s): ");
     // this is looking at the artists array and logging the name 
-    spotArray[0].artists.forEach(function (item) {
+    spotArray[0].artists.forEach(function (item, index) {
       // log each artist name 
-      console.log(item.name);
+      // console.log(item.name);
+      artistArray[index] = item.name
     });
-    console.log("\nSong name: " + spotArray[0].name
+    // console.log(artistArray.join(", "))
+    // console.log("\nSong name: " + spotArray[0].name
+    //   + "\nPreview URL: " + spotArray[0].preview_url
+    //   + "\nAlbum name: " + spotArray[0].album.name)
+
+
+    var displayValue = [
+      "Artist name(s): " + "\n" +
+      artistArray.join(", ") +
+      "\nSong name: " + spotArray[0].name
       + "\nPreview URL: " + spotArray[0].preview_url
-      + "\nAlbum name: " + spotArray[0].album.name)
-    console.log(divider)
+      + "\nAlbum name: " + spotArray[0].album.name
+    ].join("\n");
+    // console.log(displayValue)
+    // console.log(divider)
+    writeToFile(displayValue)
+   
   });
 };
 
@@ -101,41 +132,53 @@ function whatItSays() {
   });
 };
 
+function writeToFile(value){
+   // Write file 
+   fs.appendFile("log.txt", value + divider, function (err) {
+    if (err) {
+      throw err
+    }
+    else {
+      console.log(value)
+    }
+  });
+}
 
-// if (!process.argv[3]){
-//   input = 'Mr. Nobody'
-// };
-// var queryUrl = "http://www.omdbapi.com/?t=" + input + "&y=&plot=short&apikey=trilogy";
+function movieThis(){
 
-// request(queryUrl, function(error, response, body) {
+  if (!process.argv[3]){
+    input = 'Mr. Nobody'
+  };
+  var queryUrl = "http://www.omdbapi.com/?t=" + input + "&y=&plot=short&apikey=trilogy";
+  
+  request(queryUrl, function(error, response, body) {
 
-//   if (!error && response.statusCode === 200) {
+    if (!error && response.statusCode === 200) {
+      // console.log(JSON.parse(body));
+      var movie = JSON.parse(body);
+      var displayValue = [
+          "Movie title: " + movie.Title+
+          "\nYear of Movie: " + movie.Year
+          + "\nIMDB Rating: " + movie.imdbRating
+          + "\nRotten Tomatoes Rating: " + movie.Ratings[1].Value
+          + "\nCountry Produced: " + movie.Country
+          + "\nLanguage: " + movie.Language
+          + "\nPlot: " + movie.Plot
+          + "\nActors: " + movie.Actors  
+      ].join("\n")
+      // console.log("Release Year: " + JSON.parse(body).Year);
+      // console.log(displayValue)
+      writeToFile(displayValue)
+    }
+  });
+}
 
-//     console.log("Release Year: " + JSON.parse(body).Year);
-//   }
-// });
-
-
-
-//  * Title of the movie.
-// * Year the movie came out.
-// * IMDB Rating of the movie.
-// * Rotten Tomatoes Rating of the movie.
-// * Country where the movie was produced.
-// * Language of the movie.
-// * Plot of the movie.
-// * Actors in the movie.
 
 
 
 
-// Write file 
-// fs.appendFile("log.txt", value + divider, function (err) {
-//   if (err) {
-//     throw err
-//   }
-//   else {
-//     console.log(value)
-//   }
-// });
+
+
+
+
 
